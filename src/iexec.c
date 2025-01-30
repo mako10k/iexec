@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 enum { wait_never, wait_pid, wait_pgid, wait_all, wait_forever };
+enum { reap_never, reap_pid, reap_pgid, reap_all };
 
 static int parse_sig(const char *sigspec) {
   if (sigspec == NULL || *sigspec == '\0') {
@@ -94,18 +95,47 @@ static int parse_wait(const char *waitspec) {
   return -1;
 }
 
+static int parse_reap(const char *reapspec) {
+  if (reapspec == NULL || *reapspec == '\0') {
+    return -1;
+  }
+  if (strcasecmp(reapspec, "never") == 0 || strcasecmp(reapspec, "no") == 0 ||
+      strcasecmp(reapspec, "off") == 0) {
+    return reap_never;
+  }
+  if (strcasecmp(reapspec, "invoked") == 0 ||
+      strcasecmp(reapspec, "child") == 0 || strcasecmp(reapspec, "yes") == 0 ||
+      strcasecmp(reapspec, "on") == 0) {
+    return reap_pid;
+  }
+  if (strcasecmp(reapspec, "group") == 0 ||
+      strcasecmp(reapspec, "pgroup") == 0 ||
+      strcasecmp(reapspec, "childgroup") == 0 ||
+      strcasecmp(reapspec, "childpgroup") == 0 ||
+      strcasecmp(reapspec, "invokedgroup") == 0 ||
+      strcasecmp(reapspec, "invokedpgroup") == 0) {
+    return reap_pgid;
+  }
+  if (strcasecmp(reapspec, "all") == 0 || strcasecmp(reapspec, "any") == 0) {
+    return reap_all;
+  }
+  return -1;
+}
+
 int main(int argc, char **argv) {
   int opt;
   int opt_subreaper = 1;
   int opt_deathsig = 0;
-  int opt_wait = wait_pid;
+  int opt_wait = -1;
+  int opt_reap = -1;
   static struct option long_options[] = {
       {"subreaper", no_argument, NULL, 's'},
       {"deathsig", required_argument, NULL, 'd'},
-      {"wait", no_argument, NULL, 'w'},
+      {"wait", required_argument, NULL, 'w'},
+      {"reap", required_argument, NULL, 'r'},
       {"help", no_argument, NULL, 'h'},
       {NULL, 0, NULL, 0}};
-  while ((opt = getopt_long(argc, argv, "+s:d:w:h", long_options, NULL)) !=
+  while ((opt = getopt_long(argc, argv, "+s:d:w:r:h", long_options, NULL)) !=
          -1) {
     switch (opt) {
 
@@ -137,6 +167,14 @@ int main(int argc, char **argv) {
       }
       break;
 
+    case 'r':
+      opt_reap = parse_reap(optarg);
+      if (opt_reap == -1) {
+        fprintf(stderr, "Invalid argument: %s\n", optarg);
+        return EXIT_FAILURE;
+      }
+      break;
+
     case 'h':
       printf("Usage: %s [OPTION] [ENV=VAL ...] [COMMAND [ARG ...]]\n", argv[0]);
       printf("Execute COMMAND with ARGs\n");
@@ -145,13 +183,20 @@ int main(int argc, char **argv) {
           "  -s, --subreaper=<bool>          set subreaper process  [true]\n");
       printf(
           "  -d, --deathsig=<num>|<signame>  set death signal       [none]\n");
-      printf("  -w, --wait=never|no             never wait\n");
-      printf("  -w, --wait=child|yes            wait for child only    "
-             "[default]\n");
+      printf("  -r, --reap=<mode>               set reap mode          [same "
+             "as --wait or child]\n");
+      printf("        --reap=never|no             never reap\n");
+      printf("        --reap=child|yes            reap child only\n");
+      printf("        --reap=pgroup               reap child process group\n");
+      printf("        --reap=any                  reap any processes\n");
+      printf("  -w, --wait=<mode>               set wait mode          [same "
+             "as --reap or child]\n");
+      printf("        --wait=never|no             never wait\n");
+      printf("        --wait=child|yes            wait for child only\n");
       printf(
-          "  -w, --wait=pgroup               wait for child process group\n");
-      printf("  -w, --wait=any                  wait for any processes\n");
-      printf("  -w, --wait=forever              wait forever\n");
+          "        --wait=pgroup               wait for child process group\n");
+      printf("        --wait=any                  wait for any processes\n");
+      printf("        --wait=forever              wait forever\n");
       printf("  -h, --help                      display this help and exit\n");
       return EXIT_SUCCESS;
 
@@ -159,6 +204,34 @@ int main(int argc, char **argv) {
       fprintf(stderr, "Try '%s --help' for more information.\n", argv[0]);
       return EXIT_FAILURE;
     }
+  }
+
+  int cmdind = optind;
+  while (cmdind < argc && strchr(argv[cmdind], '=') != NULL) {
+    cmdind++;
+  }
+
+  if (opt_reap == -1 && opt_wait == -1) {
+    opt_reap = reap_pid;
+    opt_wait = wait_pid;
+  }
+
+  if (opt_wait == -1) {
+    opt_wait = opt_reap;
+  }
+
+  if (opt_reap == -1) {
+    if (opt_wait == wait_forever) {
+      opt_reap = reap_all;
+    } else {
+      opt_reap = opt_wait;
+    }
+  }
+
+  if (opt_reap < opt_wait &&
+      !(opt_reap == reap_all && opt_wait == wait_forever)) {
+    fprintf(stderr, "reap mode must be same or wider than wait mode\n");
+    return EXIT_FAILURE;
   }
 
   if (opt_subreaper) {
@@ -175,17 +248,15 @@ int main(int argc, char **argv) {
     }
   }
 
-  int cmdind = optind;
-  while (cmdind < argc && strchr(argv[cmdind], '=') != NULL) {
-    cmdind++;
-  }
+  pid_t pid_wait = -1;
+
   if (cmdind < argc) {
-    pid_t pid = fork();
-    if (pid == -1) {
+    pid_t pid_child = fork();
+    if (pid_child == -1) {
       perror("fork");
       return EXIT_FAILURE;
     }
-    if (pid == 0) {
+    if (pid_child == 0) {
       for (int i = optind; i < cmdind; i++) {
         putenv(argv[i]);
       }
@@ -193,56 +264,22 @@ int main(int argc, char **argv) {
       perror(argv[cmdind]);
       return 127;
     }
-    pid_t wpid;
 
-    switch (opt_wait) {
-    case wait_never:
+    switch (opt_reap) {
+    case reap_never:
       return EXIT_SUCCESS;
-    case wait_pid:
-      wpid = pid;
+    case reap_pid:
+      pid_wait = pid_child;
       break;
-    case wait_pgid:
-      wpid = -pid;
+    case reap_pgid:
+      pid_wait = -pid_child;
       break;
-    case wait_all:
-      wpid = -1;
+    case reap_all:
+      pid_wait = -1;
       break;
-    case wait_forever:
-      wpid = -1;
-      break;
+    default:
+      abort();
     }
-
-    while (1) {
-      int status, status_ret = 0;
-      pid_t pid_ret = waitpid(wpid, &status, 0);
-      if (pid_ret == -1) {
-        if (errno == EINTR) {
-          continue;
-        }
-        if (errno == ECHILD) {
-          if (opt_wait == wait_forever) {
-            if (getpid() != 1)
-              break;
-            sigset_t mask;
-            sigemptyset(&mask);
-            sigaddset(&mask, SIGCHLD);
-            struct timespec timeout = {1, 0};
-            if (sigtimedwait(&mask, NULL, &timeout) == -1) {
-              perror("sigtimedwait");
-              return EXIT_FAILURE;
-            }
-            continue;
-          }
-          return status_ret;
-        }
-        perror("waitpid");
-        return EXIT_FAILURE;
-      }
-      if (pid_ret == pid) {
-        status_ret = status;
-      }
-    }
-
   } else {
     switch (opt_wait) {
     case wait_never:
@@ -251,18 +288,67 @@ int main(int argc, char **argv) {
       return EXIT_SUCCESS;
     case wait_pgid:
       return EXIT_SUCCESS;
-    case wait_all:
+    case wait_all: {
+      int ret = kill(-1, 0);
+      if (ret == -1) {
+        if (errno == ESRCH) {
+          return EXIT_SUCCESS;
+        }
+        perror("kill");
+        return EXIT_FAILURE;
+      }
       break;
+    };
     case wait_forever:
       break;
     }
   }
+
   while (1) {
-    int ret = pause();
-    if (ret == -1 && errno == EINTR) {
-      continue;
+    int status, status_child = 0;
+    pid_t pid_ret = waitpid(pid_wait, &status, 0);
+    if (pid_ret == -1) {
+      if (errno == EINTR) {
+        continue;
+      }
+      if (errno == ECHILD) {
+        if (opt_wait == wait_forever) {
+          sigset_t mask;
+          sigemptyset(&mask);
+          sigaddset(&mask, SIGCHLD);
+          struct timespec timeout = {1, 0};
+          if (sigtimedwait(&mask, NULL, &timeout) == -1) {
+            if (errno == EAGAIN) {
+              continue;
+            }
+            perror("sigtimedwait");
+            return EXIT_FAILURE;
+          }
+          continue;
+        }
+        exit(status_child);
+      }
+      perror("waitpid");
+      exit(EXIT_FAILURE);
     }
-    perror("pause");
-    return EXIT_FAILURE;
+    if (pid_ret == pid_wait) {
+      status_child = status;
+      if (opt_wait != opt_reap) {
+        switch (opt_wait) {
+        case wait_pid:
+          // reap_pgid or reap_all
+          exit(status_child);
+          break;
+        case wait_pgid: {
+          // reap_all
+          int ret = kill(-pid_wait, 0);
+          if (ret == -1 && errno == ESRCH) {
+            exit(status_child);
+          }
+          break;
+        }
+        }
+      }
+    }
   }
 }

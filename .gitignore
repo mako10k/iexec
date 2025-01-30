@@ -16,3 +16,4 @@
 /src/*
 !/src/*.[ch]
 !/src/Makefile.am
+*~

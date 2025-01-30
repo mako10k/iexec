@@ -1,3 +1,6 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <errno.h>
 #include <getopt.h>
 #include <signal.h>
@@ -8,52 +11,85 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-enum {
-  wait_never = 0,
-  wait_invoked = 1,
-  wait_invokedgroup = 2,
-  wait_all = 3,
-  wait_forever = 4,
-};
+enum { wait_never, wait_pid, wait_pgid, wait_all, wait_forever };
 
-static struct sigspec {
-  const char *name;
-  int signo;
-} sigspecs[] = {
-    {"HUP", SIGHUP},   {"INT", SIGINT},       {"QUIT", SIGQUIT},
-    {"ILL", SIGILL},   {"TRAP", SIGTRAP},     {"ABRT", SIGABRT},
-    {"IOT", SIGIOT},   {"BUS", SIGBUS},       {"FPE", SIGFPE},
-    {"KILL", SIGKILL}, {"USR1", SIGUSR1},     {"SEGV", SIGSEGV},
-    {"USR2", SIGUSR2}, {"PIPE", SIGPIPE},     {"ALRM", SIGALRM},
-    {"TERM", SIGTERM}, {"STKFLT", SIGSTKFLT}, {"CHLD", SIGCHLD},
-    {"CONT", SIGCONT}, {"STOP", SIGSTOP},     {"TSTP", SIGTSTP},
-    {"TTIN", SIGTTIN}, {"TTOU", SIGTTOU},     {"URG", SIGURG},
-    {"XCPU", SIGXCPU}, {"XFSZ", SIGXFSZ},     {"VTALRM", SIGVTALRM},
-    {"PROF", SIGPROF}, {"WINCH", SIGWINCH},   {"IO", SIGIO},
-    {"PWR", SIGPWR},   {"SYS", SIGSYS},       {NULL, 0},
-};
-
-int parse_sig(const char *sigspec) {
+static int parse_sig(const char *sigspec) {
   if (sigspec == NULL || *sigspec == '\0') {
     return -1;
   }
-  char *p;
-  long signo = strtol(sigspec, &p, 10);
-  if (sigspec != p && *p == '\0') {
-    for (int i = 0; sigspecs[i].name != NULL; i++) {
-      if (sigspecs[i].signo == signo) {
+  {
+    char *p;
+    long signo = strtol(sigspec, &p, 10);
+    if (sigspec != p && *p == '\0') {
+      if (0 < signo && signo < NSIG) {
         return signo;
       }
+      return -1;
     }
-    return -1;
   }
-  if (strncmp(sigspec, "SIG", 3) == 0) {
+  if (strncasecmp(sigspec, "SIG", 3) == 0) {
     sigspec += 3;
   }
-  for (int i = 0; sigspecs[i].name != NULL; i++) {
-    if (strcmp(sigspec, sigspecs[i].name) == 0) {
-      return sigspecs[i].signo;
+  for (int signo = 1; signo < NSIG; signo++) {
+    const char *signame = sigabbrev_np(signo);
+    if (signame == NULL) {
+      continue;
     }
+    if (strcasecmp(sigspec, signame) == 0) {
+      return signo;
+    }
+  }
+  return -1;
+}
+
+static int parse_bool(const char *boolspec) {
+  if (boolspec == NULL || *boolspec == '\0') {
+    return -1;
+  }
+  {
+    char *p;
+    long value = strtol(boolspec, &p, 10);
+    if (boolspec != p && *p == '\0') {
+      return value != 0;
+    }
+  }
+  if (strcasecmp(boolspec, "true") == 0 || strcasecmp(boolspec, "yes") == 0 ||
+      strcasecmp(boolspec, "on") == 0) {
+    return 1;
+  }
+  if (strcasecmp(boolspec, "false") == 0 || strcasecmp(boolspec, "no") == 0 ||
+      strcasecmp(boolspec, "off") == 0) {
+    return 0;
+  }
+  return -1;
+}
+
+static int parse_wait(const char *waitspec) {
+  if (waitspec == NULL || *waitspec == '\0') {
+    return -1;
+  }
+  if (strcasecmp(waitspec, "never") == 0 || strcasecmp(waitspec, "no") == 0 ||
+      strcasecmp(waitspec, "off") == 0) {
+    return wait_never;
+  }
+  if (strcasecmp(waitspec, "invoked") == 0 ||
+      strcasecmp(waitspec, "child") == 0 || strcasecmp(waitspec, "yes") == 0 ||
+      strcasecmp(waitspec, "on") == 0) {
+    return wait_pid;
+  }
+  if (strcasecmp(waitspec, "group") == 0 ||
+      strcasecmp(waitspec, "pgroup") == 0 ||
+      strcasecmp(waitspec, "childgroup") == 0 ||
+      strcasecmp(waitspec, "childpgroup") == 0 ||
+      strcasecmp(waitspec, "invokedgroup") == 0 ||
+      strcasecmp(waitspec, "invokedpgroup") == 0) {
+    return wait_pgid;
+  }
+  if (strcasecmp(waitspec, "all") == 0 || strcasecmp(waitspec, "any") == 0) {
+    return wait_all;
+  }
+  if (strcasecmp(waitspec, "forever") == 0) {
+    return wait_forever;
   }
   return -1;
 }
@@ -62,7 +98,7 @@ int main(int argc, char **argv) {
   int opt;
   int opt_subreaper = 1;
   int opt_deathsig = 0;
-  int opt_wait = wait_invoked;
+  int opt_wait = wait_pid;
   static struct option long_options[] = {
       {"subreaper", no_argument, NULL, 's'},
       {"deathsig", required_argument, NULL, 'd'},
@@ -74,11 +110,8 @@ int main(int argc, char **argv) {
     switch (opt) {
 
     case 's':
-      if (strcmp(optarg, "true") == 0) {
-        opt_subreaper = 1;
-      } else if (strcmp(optarg, "false") == 0) {
-        opt_subreaper = 0;
-      } else {
+      opt_subreaper = parse_bool(optarg);
+      if (opt_subreaper == -1) {
         fprintf(stderr, "Invalid argument: %s\n", optarg);
         return EXIT_FAILURE;
       }
@@ -97,17 +130,8 @@ int main(int argc, char **argv) {
       break;
 
     case 'w':
-      if (strcmp(optarg, "never") == 0) {
-        opt_wait = wait_never;
-      } else if (strcmp(optarg, "invoked") == 0) {
-        opt_wait = wait_invoked;
-      } else if (strcmp(optarg, "invokedgroup") == 0) {
-        opt_wait = wait_invokedgroup;
-      } else if (strcmp(optarg, "all") == 0) {
-        opt_wait = wait_all;
-      } else if (strcmp(optarg, "forever") == 0) {
-        opt_wait = wait_forever;
-      } else {
+      opt_wait = parse_wait(optarg);
+      if (opt_wait == -1) {
         fprintf(stderr, "Invalid argument: %s\n", optarg);
         return EXIT_FAILURE;
       }
@@ -117,13 +141,18 @@ int main(int argc, char **argv) {
       printf("Usage: %s [OPTION] [ENV=VAL ...] [COMMAND [ARG ...]]\n", argv[0]);
       printf("Execute COMMAND with ARGs\n");
       printf("Options:\n");
-      printf("  -s, --subreaper={true,false}       set as subreaper  [true]\n");
-      printf("  -d, --deathsig={<num>|<signame>}   set death signal  [none]\n");
-      printf("  -w, --wait={never|invoked|invokedgroup|all|foreaver}");
       printf(
-          "                                     wait for children [invoked]\n");
-      printf("  -h, --help                         display this help and "
-             "exit\n");
+          "  -s, --subreaper=<bool>          set subreaper process  [true]\n");
+      printf(
+          "  -d, --deathsig=<num>|<signame>  set death signal       [none]\n");
+      printf("  -w, --wait=never|no             never wait\n");
+      printf("  -w, --wait=child|yes            wait for child only    "
+             "[default]\n");
+      printf(
+          "  -w, --wait=pgroup               wait for child process group\n");
+      printf("  -w, --wait=any                  wait for any processes\n");
+      printf("  -w, --wait=forever              wait forever\n");
+      printf("  -h, --help                      display this help and exit\n");
       return EXIT_SUCCESS;
 
     default:
@@ -169,10 +198,10 @@ int main(int argc, char **argv) {
     switch (opt_wait) {
     case wait_never:
       return EXIT_SUCCESS;
-    case wait_invoked:
+    case wait_pid:
       wpid = pid;
       break;
-    case wait_invokedgroup:
+    case wait_pgid:
       wpid = -pid;
       break;
     case wait_all:
@@ -192,7 +221,17 @@ int main(int argc, char **argv) {
         }
         if (errno == ECHILD) {
           if (opt_wait == wait_forever) {
-            break;
+            if (getpid() != 1)
+              break;
+            sigset_t mask;
+            sigemptyset(&mask);
+            sigaddset(&mask, SIGCHLD);
+            struct timespec timeout = {1, 0};
+            if (sigtimedwait(&mask, NULL, &timeout) == -1) {
+              perror("sigtimedwait");
+              return EXIT_FAILURE;
+            }
+            continue;
           }
           return status_ret;
         }
@@ -208,9 +247,9 @@ int main(int argc, char **argv) {
     switch (opt_wait) {
     case wait_never:
       return EXIT_SUCCESS;
-    case wait_invoked:
+    case wait_pid:
       return EXIT_SUCCESS;
-    case wait_invokedgroup:
+    case wait_pgid:
       return EXIT_SUCCESS;
     case wait_all:
       break;

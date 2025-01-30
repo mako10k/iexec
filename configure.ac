@@ -6,6 +6,7 @@ AC_INIT([iexec], [0.0.1], [mako10k@mk10.org])
 AC_CONFIG_SRCDIR([src/iexec.c])
 AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign])
+AC_USE_SYSTEM_EXTENSIONS
 
 # Checks for programs.
 AC_PROG_CC

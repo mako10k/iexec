@@ -1,0 +1,7 @@
+CompileFlags:
+    Add:
+        - -Wall
+        - -Wextra
+        - -Werror
+        - -I..
+        - -DHAVE_CONFIG_H

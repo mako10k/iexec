@@ -3,3 +3,6 @@ iexec_SOURCES = iexec.c
 
 AM_LDFLAGS = -static
 AM_CFLAGS = -Wall -Wextra -Werror
+
+install-exec-hook:
+	chmod u+s "$(DESTDIR)$(bindir)/iexec"

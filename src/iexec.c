@@ -11,16 +11,21 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-enum { wait_never, wait_pid, wait_pgid, wait_all, wait_forever };
-enum { reap_never, reap_pid, reap_pgid, reap_all };
+enum { wait_never, wait_pid, wait_all, wait_forever };
+enum { reap_never, reap_pid, reap_all };
 
+/**
+ * Parse signal name or number
+ * @param sigspec signal name or number
+ * @return signal number or -1 if invalid
+ */
 static int parse_sig(const char *sigspec) {
   if (sigspec == NULL || *sigspec == '\0') {
     return -1;
   }
   {
     char *p;
-    long signo = strtol(sigspec, &p, 10);
+    long signo = strtol(sigspec, &p, 0);
     if (sigspec != p && *p == '\0') {
       if (0 < signo && signo < NSIG) {
         return signo;
@@ -43,6 +48,11 @@ static int parse_sig(const char *sigspec) {
   return -1;
 }
 
+/**
+ * Parse boolean value
+ * @param boolspec boolean value
+ * @return boolean value or -1 if invalid
+ */
 static int parse_bool(const char *boolspec) {
   if (boolspec == NULL || *boolspec == '\0') {
     return -1;
@@ -65,6 +75,11 @@ static int parse_bool(const char *boolspec) {
   return -1;
 }
 
+/**
+ * Parse wait mode
+ * @param waitspec wait mode
+ * @return wait mode or -1 if invalid
+ */
 static int parse_wait(const char *waitspec) {
   if (waitspec == NULL || *waitspec == '\0') {
     return -1;
@@ -77,14 +92,6 @@ static int parse_wait(const char *waitspec) {
       strcasecmp(waitspec, "child") == 0 || strcasecmp(waitspec, "yes") == 0 ||
       strcasecmp(waitspec, "on") == 0) {
     return wait_pid;
-  }
-  if (strcasecmp(waitspec, "group") == 0 ||
-      strcasecmp(waitspec, "pgroup") == 0 ||
-      strcasecmp(waitspec, "childgroup") == 0 ||
-      strcasecmp(waitspec, "childpgroup") == 0 ||
-      strcasecmp(waitspec, "invokedgroup") == 0 ||
-      strcasecmp(waitspec, "invokedpgroup") == 0) {
-    return wait_pgid;
   }
   if (strcasecmp(waitspec, "all") == 0 || strcasecmp(waitspec, "any") == 0) {
     return wait_all;
@@ -107,14 +114,6 @@ static int parse_reap(const char *reapspec) {
       strcasecmp(reapspec, "child") == 0 || strcasecmp(reapspec, "yes") == 0 ||
       strcasecmp(reapspec, "on") == 0) {
     return reap_pid;
-  }
-  if (strcasecmp(reapspec, "group") == 0 ||
-      strcasecmp(reapspec, "pgroup") == 0 ||
-      strcasecmp(reapspec, "childgroup") == 0 ||
-      strcasecmp(reapspec, "childpgroup") == 0 ||
-      strcasecmp(reapspec, "invokedgroup") == 0 ||
-      strcasecmp(reapspec, "invokedpgroup") == 0) {
-    return reap_pgid;
   }
   if (strcasecmp(reapspec, "all") == 0 || strcasecmp(reapspec, "any") == 0) {
     return reap_all;
@@ -187,14 +186,11 @@ int main(int argc, char **argv) {
              "as --wait or child]\n");
       printf("        --reap=never|no             never reap\n");
       printf("        --reap=child|yes            reap child only\n");
-      printf("        --reap=pgroup               reap child process group\n");
       printf("        --reap=any                  reap any processes\n");
       printf("  -w, --wait=<mode>               set wait mode          [same "
              "as --reap or child]\n");
       printf("        --wait=never|no             never wait\n");
       printf("        --wait=child|yes            wait for child only\n");
-      printf(
-          "        --wait=pgroup               wait for child process group\n");
       printf("        --wait=any                  wait for any processes\n");
       printf("        --wait=forever              wait forever\n");
       printf("  -h, --help                      display this help and exit\n");
@@ -271,9 +267,6 @@ int main(int argc, char **argv) {
     case reap_pid:
       pid_wait = pid_child;
       break;
-    case reap_pgid:
-      pid_wait = -pid_child;
-      break;
     case reap_all:
       pid_wait = -1;
       break;
@@ -285,8 +278,6 @@ int main(int argc, char **argv) {
     case wait_never:
       return EXIT_SUCCESS;
     case wait_pid:
-      return EXIT_SUCCESS;
-    case wait_pgid:
       return EXIT_SUCCESS;
     case wait_all: {
       int ret = kill(-1, 0);
@@ -334,19 +325,11 @@ int main(int argc, char **argv) {
     if (pid_ret == pid_wait) {
       status_child = status;
       if (opt_wait != opt_reap) {
-        switch (opt_wait) {
-        case wait_pid:
-          // reap_pgid or reap_all
+        if (opt_wait == wait_pid) {
           exit(status_child);
-          break;
-        case wait_pgid: {
-          // reap_all
-          int ret = kill(-pid_wait, 0);
-          if (ret == -1 && errno == ESRCH) {
-            exit(status_child);
-          }
-          break;
         }
+        if (opt_wait == wait_all) {
+          continue;
         }
       }
     }

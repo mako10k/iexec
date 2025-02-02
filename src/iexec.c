@@ -234,7 +234,7 @@ static void exec_command(int argc, char **argv, struct iexec_option *ctx) {
       exit(EXIT_FAILURE);
     }
     if (pid_child == 0) {
-      for (int i = optind; i < cmdind; i++) {
+      for (int i = 0; i < cmdind; i++) {
         putenv(argv[i]);
       }
       execvp(argv[cmdind], &argv[cmdind]);

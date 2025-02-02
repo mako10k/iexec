@@ -172,11 +172,9 @@ static void wait_forever(void) {
   }
 }
 
-static void wait_for_children(pid_t pid_child, void (*fix)(int, void *),
-                              void *data) __attribute__((noreturn));
+static void wait_for_children(pid_t pid_child) __attribute__((noreturn));
 
-static void wait_for_children(pid_t pid_child, void (*fix)(int, void *),
-                              void *data) {
+static void wait_for_children(pid_t pid_child) {
   int status;
   int status_child = -1;
   while (1) {
@@ -187,21 +185,12 @@ static void wait_for_children(pid_t pid_child, void (*fix)(int, void *),
       }
       if (errno == ECHILD) {
         if (status_child != -1) {
-          if (fix) {
-            fix(status_child, data);
-          }
           exit(status_child);
         }
         ielog(iefatal, "No child process\n");
-        if (fix) {
-          fix(EXIT_FAILURE, data);
-        }
         exit(EXIT_FAILURE);
       }
       ielog(iefatal, "waitpid: %s\n", strerror(errno));
-      if (fix) {
-        fix(EXIT_FAILURE, data);
-      }
       exit(EXIT_FAILURE);
     }
     if (pid_reported == pid_child) {
@@ -262,7 +251,7 @@ static void exec_command(int argc, char **argv, struct iexec_option *ctx) {
     wait_forever();
   }
 
-  wait_for_children(pid_child, NULL, NULL);
+  wait_for_children(pid_child);
 }
 
 static void drop_privilege(void) {
@@ -466,17 +455,6 @@ static void print_warning(struct iexec_option *ctx) {
   }
 }
 
-static void fix_tty(int status, void *tty_) {
-  (void)status;
-
-  struct termios *tty = tty_;
-  int ret = tcsetattr(STDIN_FILENO, TCSANOW, tty);
-  if (ret == -1) {
-    ielog(iefatal, "tcsetattr: %s\n", strerror(errno));
-    exit(EXIT_FAILURE);
-  }
-}
-
 static void run_iexec(int argc, char **argv, struct iexec_option *ctx) {
   switch (ctx->pidns) {
   case PIDNS_INHERIT:
@@ -503,16 +481,6 @@ static void run_iexec(int argc, char **argv, struct iexec_option *ctx) {
     abort();
   }
 
-  int issaved_tty = 0;
-  struct termios tty;
-  if (ctx->pidns != PIDNS_NEW && isatty(STDIN_FILENO)) {
-    int ret = tcgetattr(STDIN_FILENO, &tty);
-    if (ret == -1) {
-      ielog(iefatal, "tcgetattr: %s\n", strerror(errno));
-      exit(EXIT_FAILURE);
-    }
-    issaved_tty = 1;
-  }
   pid_t pid_child = fork();
   if (pid_child == -1) {
     ielog(iefatal, "fork: %s\n", strerror(errno));
@@ -537,8 +505,7 @@ static void run_iexec(int argc, char **argv, struct iexec_option *ctx) {
         program_invocation_name, pid_child, getenv("SHELL") ?: "/bin/sh");
   }
 
-  wait_for_children(pid_child, issaved_tty ? fix_tty : NULL,
-                    issaved_tty ? &tty : NULL);
+  wait_for_children(pid_child);
 }
 
 int main(int argc, char **argv) {

@@ -64,10 +64,10 @@ static int parse_optval_signal(const char *sigspec) {
   }
   {
     char *p;
-    long signo = strtol(sigspec, &p, 0);
+    long signum = strtol(sigspec, &p, 0);
     if (sigspec != p && *p == '\0') {
-      if (0 < signo && signo < NSIG) {
-        return signo;
+      if (0 < signum && signum < NSIG) {
+        return signum;
       }
       return -1;
     }
@@ -75,13 +75,13 @@ static int parse_optval_signal(const char *sigspec) {
   if (strncasecmp(sigspec, "SIG", 3) == 0) {
     sigspec += 3;
   }
-  for (int signo = 1; signo < NSIG; signo++) {
-    const char *signame = sigabbrev_np(signo);
+  for (int signum = 1; signum < NSIG; signum++) {
+    const char *signame = sigabbrev_np(signum);
     if (signame == NULL) {
       continue;
     }
     if (strcasecmp(sigspec, signame) == 0) {
-      return signo;
+      return signum;
     }
   }
   return -1;
@@ -290,7 +290,7 @@ static void print_usage(FILE *stream) {
   fprintf(stream, "Run COMMAND with PID namespace\n");
   fprintf(stream, "\n");
   fprintf(stream, "Options:\n");
-  fprintf(stream, "  -k, --deathsig=SIGNAME|SIGNO  set parent death signal\n");
+  fprintf(stream, "  -k, --deathsig=SIGNAME|SIGNUM set parent death signal\n");
   fprintf(stream, "  -p, --pidns[=MODE]            set PID namespace\n");
   fprintf(stream, "      MODE can be:\n");
   fprintf(stream, "        inherit                   inherit PID namespace\n");

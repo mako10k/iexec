@@ -20,7 +20,9 @@ void iexec_printf(iexec_print_level_t level, const char *msg, ...)
     __attribute((format(printf, 2, 3)));
 
 void iexec_printf_increase_verbosity(void);
+
 void iexec_printf_decrease_verbosity(void);
 
 int iexec_errno(void);
+
 const char *iexec_strerror(int errnum);

@@ -7,12 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/**
- * Parse signal name or number
- * @param sigspec signal name or number
- * @return signal number or -1 if invalid
- */
-int iexec_option_parse_signal(const char *sigspec) {
+static int iexec_option_parse_signal(const char *sigspec) {
   if (sigspec == NULL || *sigspec == '\0') {
     return -1;
   }
@@ -44,7 +39,7 @@ int iexec_option_parse_signal(const char *sigspec) {
   return -1;
 }
 
-int iexec_option_parse_pidns_mode(const char *pidns, iexec_option_t *ctx) {
+static int iexec_option_parse_pidns_mode(const char *pidns, iexec_option_t *ctx) {
   if (pidns == NULL || *pidns == '\0') {
     ctx->pidns = IEXEC_PIDNS_MODE_NEW;
     return 0;

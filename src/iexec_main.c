@@ -88,9 +88,8 @@ void iexec_main(int argc, char **argv, iexec_option_t *ctx) {
 
     if (ctx->pidns != IEXEC_PIDNS_MODE_INHERIT) {
       iexec_pidns_prepare();
-    } else {
-      iexec_drop_privilege_permanently();
     }
+    iexec_drop_privilege_permanently();
 
     iexec_mainloop(argc, argv, ctx);
   }

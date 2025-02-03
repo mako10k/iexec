@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-static iexec_print_level_t verbose = IEXEC_PRINT_LEVEL_INFORMATION;
+static iexec_print_level_t verbose = IEXEC_PRINT_LEVEL_WARNING;
 
 void iexec_printf(iexec_print_level_t level, const char *msg, ...) {
   if (verbose >= level) {

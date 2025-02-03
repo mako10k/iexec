@@ -7,7 +7,7 @@
 #include <string.h>
 #include <sys/wait.h>
 
-void iexec_wait_for_sigchld_or_timeout(void) {
+static void iexec_wait_for_sigchld_or_timeout(void) {
   sigset_t mask;
   sigemptyset(&mask);
   sigaddset(&mask, SIGCHLD);
@@ -17,7 +17,8 @@ void iexec_wait_for_sigchld_or_timeout(void) {
     if (errno == EAGAIN) {
       return;
     }
-    iexec_printf(IEXEC_PRINT_LEVEL_FATAL, "sigtimedwait: %s\n", iexec_strerror(iexec_errno()));
+    iexec_printf(IEXEC_PRINT_LEVEL_FATAL, "sigtimedwait: %s\n",
+                 iexec_strerror(iexec_errno()));
     iexec_exit(IEXEC_EXIT_FAILURE);
   }
 }
@@ -32,7 +33,8 @@ void iexec_wait_forever(void) {
         continue;
       }
       if (errno != ECHILD) {
-        iexec_printf(IEXEC_PRINT_LEVEL_FATAL, "waitpid: %s\n", iexec_strerror(iexec_errno()));
+        iexec_printf(IEXEC_PRINT_LEVEL_FATAL, "waitpid: %s\n",
+                     iexec_strerror(iexec_errno()));
         iexec_exit(IEXEC_EXIT_FAILURE);
       }
     }
@@ -56,7 +58,8 @@ void iexec_wait_for_children(pid_t pid_child) {
         iexec_printf(IEXEC_PRINT_LEVEL_FATAL, "No child process\n");
         iexec_exit(IEXEC_EXIT_FAILURE);
       }
-      iexec_printf(IEXEC_PRINT_LEVEL_FATAL, "waitpid: %s\n", iexec_strerror(iexec_errno()));
+      iexec_printf(IEXEC_PRINT_LEVEL_FATAL, "waitpid: %s\n",
+                   iexec_strerror(iexec_errno()));
       iexec_exit(IEXEC_EXIT_FAILURE);
     }
     if (pid_reported == pid_child) {

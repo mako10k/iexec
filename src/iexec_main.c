@@ -46,7 +46,7 @@ void iexec_print_warning(iexec_option_t *ctx) {
       iexec_printf(IEXEC_PRINT_LEVEL_WARNING,
                    "Warning: running as init process\n");
       iexec_printf(IEXEC_PRINT_LEVEL_WARNING,
-                   "Warning: -p or --pidns shuld not be used with init\n");
+                   "Warning: -p or --pidns should not be used with init\n");
     }
     if (ctx->pidns == IEXEC_PIDNS_MODE_NEW) {
       iexec_printf(IEXEC_PRINT_LEVEL_WARNING,

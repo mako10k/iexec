@@ -62,12 +62,12 @@ static int iexec_option_parse_pidns_mode(const char *pidns, iexec_option_t *ctx)
     }
     return -1;
   }
-  if (strcasecmp(pidns, "file:") == 0) {
+  if (strncasecmp(pidns, "file:", 5) == 0) {
     ctx->pidns = IEXEC_PIDNS_MODE_ENTER_BY_FILE;
     ctx->pidns_filename = pidns + 5;
     return 0;
   }
-  if (strcasecmp(pidns, "fd:") == 0) {
+  if (strncasecmp(pidns, "fd:", 3) == 0) {
     char *p;
     long fd = strtol(pidns + 3, &p, 0);
     if (pidns + 3 != p && *p == '\0') {

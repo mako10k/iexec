@@ -36,12 +36,53 @@ run_expect_status 0 /bin/true
 run_expect_status 1 /bin/false
 run_expect_status 7 /bin/sh -c 'exit 7'
 run_expect_status 143 /bin/sh -c 'kill -TERM $$'
+run_expect_status 0 FOO=bar /bin/sh -c 'test "$FOO" = bar'
+run_expect_status 0 --deathsig=NONE /bin/true
+run_expect_status 0 --deathsig=TERM /bin/true
+run_expect_status 0 --deathsig=15 /bin/true
+run_expect_status 0 --pidns=inherit /bin/true
+
+version_output=$("$IEXEC" --version)
+status=$?
+if [ "$status" -ne 0 ]; then
+  fail "expected --version status 0, got $status"
+fi
+case "$version_output" in
+  iexec\ *) ;;
+  *) fail "unexpected --version output: $version_output" ;;
+esac
 
 help_output=$("$IEXEC" --help)
+status=$?
+if [ "$status" -ne 0 ]; then
+  fail "expected --help status 0, got $status"
+fi
+case "$help_output" in
+  *"Run COMMAND as an init/reaper wrapper"*) ;;
+  *) fail "--help output must describe init/reaper wrapper purpose" ;;
+esac
 case "$help_output" in
   *"--pidns[=MODE]"*"for validation"*) ;;
   *) fail "--pidns help text must frame PID namespace mode as validation" ;;
 esac
+
+"$IEXEC" --deathsig=NOPE /bin/true 2>"$tmpdir/invalid-deathsig.err"
+status=$?
+if [ "$status" -ne 1 ]; then
+  fail "expected invalid deathsig status 1, got $status"
+fi
+if ! grep -q "Invalid signal: NOPE" "$tmpdir/invalid-deathsig.err"; then
+  fail "missing invalid deathsig diagnostic"
+fi
+
+"$IEXEC" --pidns=pid:not-a-pid /bin/true 2>"$tmpdir/invalid-pidns.err"
+status=$?
+if [ "$status" -ne 1 ]; then
+  fail "expected invalid pidns status 1, got $status"
+fi
+if ! grep -q "Invalid pidns: pid:not-a-pid" "$tmpdir/invalid-pidns.err"; then
+  fail "missing invalid pidns diagnostic"
+fi
 
 "$IEXEC" >/dev/null 2>"$tmpdir/no-command.err"
 status=$?

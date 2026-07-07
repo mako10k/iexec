@@ -47,3 +47,8 @@ This backlog preserves the project direction:
 - [x] Consider CI after behavioral tests exist.
   CI should at least run the build and non-privileged tests; privileged
   namespace tests may need to remain opt-in.
+
+- [x] Harden CLI regression coverage.
+  Cover version and help output, `--deathsig` parsing, explicit inherited PID
+  namespace mode, invalid option diagnostics, and leading environment
+  assignments.

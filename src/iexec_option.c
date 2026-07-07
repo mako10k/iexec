@@ -11,7 +11,7 @@ static int iexec_option_parse_signal(const char *sigspec) {
   if (sigspec == NULL || *sigspec == '\0') {
     return -1;
   }
-  if (strcasecmp(optarg, "NONE") == 0) {
+  if (strcasecmp(sigspec, "NONE") == 0) {
     return 0;
   }
   {

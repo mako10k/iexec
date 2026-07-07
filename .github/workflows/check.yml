@@ -1,0 +1,34 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  autotools:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y autoconf automake gcc make
+
+      - name: Generate configure script
+        run: autoreconf -fi
+
+      - name: Configure
+        run: ./configure
+
+      - name: Build
+        run: make V=1
+
+      - name: Test
+        run: make check V=1
+
+      - name: Distribution check
+        run: make distcheck V=1
+

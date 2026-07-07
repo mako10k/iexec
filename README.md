@@ -65,6 +65,7 @@ See [docs/privilege.md](docs/privilege.md) for privilege and install policy.
 See [docs/pidns-validation.md](docs/pidns-validation.md) for `--pidns` scope.
 See [docs/install.md](docs/install.md) and [docs/release.md](docs/release.md)
 for install and release notes.
+See [docs/ci.md](docs/ci.md) for the default CI scope.
 
 ## Build
 

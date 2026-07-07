@@ -44,6 +44,6 @@ This backlog preserves the project direction:
   Add license information and release/install notes before treating the project
   as redistributable.
 
-- [ ] Consider CI after behavioral tests exist.
+- [x] Consider CI after behavioral tests exist.
   CI should at least run the build and non-privileged tests; privileged
   namespace tests may need to remain opt-in.

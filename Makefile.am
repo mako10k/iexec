@@ -5,6 +5,7 @@ TESTS += tests/docker-entrypoint.sh
 EXTRA_DIST = $(TESTS)
 EXTRA_DIST += LICENSE
 EXTRA_DIST += docs/backlog.md
+EXTRA_DIST += docs/ci.md
 EXTRA_DIST += docs/docker.md
 EXTRA_DIST += docs/install.md
 EXTRA_DIST += docs/pidns-validation.md

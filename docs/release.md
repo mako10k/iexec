@@ -1,11 +1,9 @@
 # Release Notes
 
-This project is not ready to be treated as redistributable until a real license
-is selected. See [../LICENSE](../LICENSE).
+This project is licensed under the MIT License. See [../LICENSE](../LICENSE).
 
 ## Release Checklist
 
-- Select and commit a project license.
 - Update `AC_INIT` in [../configure.ac](../configure.ac) when changing the
   release version.
 - Run `autoreconf -fi`.
@@ -25,5 +23,4 @@ After the checklist passes, create the source archive with:
 make dist
 ```
 
-Do not publish the archive until the license status is resolved.
-
+The archive is redistributable under the MIT License.

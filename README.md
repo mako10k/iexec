@@ -67,6 +67,10 @@ See [docs/install.md](docs/install.md) and [docs/release.md](docs/release.md)
 for install and release notes.
 See [docs/ci.md](docs/ci.md) for the default CI scope.
 
+## License
+
+MIT License. See [LICENSE](LICENSE).
+
 ## Build
 
 ```sh

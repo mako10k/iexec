@@ -13,7 +13,7 @@ This backlog preserves the project direction:
   should report signal termination using the conventional shell-compatible
   status.
 
-- [ ] Forward shutdown signals to the main child.
+- [x] Forward shutdown signals to the main child.
   Signals such as `SIGTERM`, `SIGINT`, `SIGHUP`, and `SIGQUIT` received by
   `iexec` should be forwarded so Docker stop and similar shutdown paths can
   terminate the wrapped process gracefully.

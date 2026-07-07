@@ -40,7 +40,7 @@ This backlog preserves the project direction:
 
 ## P2
 
-- [ ] Add project metadata.
+- [x] Add project metadata.
   Add license information and release/install notes before treating the project
   as redistributable.
 

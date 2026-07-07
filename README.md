@@ -63,6 +63,8 @@ See [docs/backlog.md](docs/backlog.md) for the implementation direction.
 See [docs/docker.md](docs/docker.md) for Docker entrypoint usage.
 See [docs/privilege.md](docs/privilege.md) for privilege and install policy.
 See [docs/pidns-validation.md](docs/pidns-validation.md) for `--pidns` scope.
+See [docs/install.md](docs/install.md) and [docs/release.md](docs/release.md)
+for install and release notes.
 
 ## Build
 

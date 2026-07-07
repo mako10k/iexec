@@ -8,7 +8,7 @@ This backlog preserves the project direction:
 
 ## P0
 
-- [ ] Fix main child result propagation.
+- [x] Fix main child result propagation.
   `iexec` must exit with the main child's exit code when it exits normally, and
   should report signal termination using the conventional shell-compatible
   status.
@@ -47,4 +47,3 @@ This backlog preserves the project direction:
 - [ ] Consider CI after behavioral tests exist.
   CI should at least run the build and non-privileged tests; privileged
   namespace tests may need to remain opt-in.
-

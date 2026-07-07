@@ -53,7 +53,7 @@ void iexec_wait_for_children(pid_t pid_child) {
       }
       if (errno == ECHILD) {
         if (status_child != -1) {
-          iexec_exit(status_child);
+          iexec_exit_from_wait_status(status_child);
         }
         iexec_printf(IEXEC_PRINT_LEVEL_FATAL, "No child process\n");
         iexec_exit(IEXEC_EXIT_FAILURE);

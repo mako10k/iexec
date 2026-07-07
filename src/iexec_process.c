@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/prctl.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 void iexec_prctl_set_child_subreaper(void) {
@@ -51,10 +52,14 @@ void iexec_execvp(const char *file, char *const argv[]) {
 }
 
 pid_t iexec_getpid(void) { return getpid(); }
-void iexec_exit(int status) {
-  if (WIFSIGNALED(status)) {
-    kill(getpid(), WTERMSIG(status));
+void iexec_exit(int status) { exit(status); }
+void iexec_exit_from_wait_status(int status) {
+  if (WIFEXITED(status)) {
+    iexec_exit(WEXITSTATUS(status));
   }
-  exit(status);
+  if (WIFSIGNALED(status)) {
+    iexec_exit(128 + WTERMSIG(status));
+  }
+  iexec_exit(IEXEC_EXIT_FAILURE);
 }
 void iexec_abort(void) { abort(); }

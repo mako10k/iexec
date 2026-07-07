@@ -24,6 +24,8 @@ void iexec_execvp(const char *file, char *const argv[])
 
 void iexec_exit(int status) __attribute__((noreturn));
 
+void iexec_exit_from_wait_status(int status) __attribute__((noreturn));
+
 pid_t iexec_getpid(void);
 
 void iexec_abort(void) __attribute__((noreturn));

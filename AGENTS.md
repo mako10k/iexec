@@ -21,6 +21,8 @@ direction and operational notes live in `docs/`, especially `docs/backlog.md`,
   explicitly enabled.
 - `IEXEC_TEST_DOCKER=1 make check`: run the Docker entrypoint integration test
   on a Docker-capable host.
+- `sudo -n env IEXEC_TEST_PIDNS=1 IEXEC_TEST_BINARY="$PWD/src/iexec" tests/pidns-validation.sh`:
+  run privileged PID namespace validation explicitly.
 - `make distcheck V=1`: verify source distribution completeness.
 
 ## Coding Style & Naming Conventions

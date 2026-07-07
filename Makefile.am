@@ -2,6 +2,7 @@ SUBDIRS = src
 
 TESTS = tests/iexec-behavior.sh
 TESTS += tests/docker-entrypoint.sh
+TESTS += tests/pidns-validation.sh
 EXTRA_DIST = $(TESTS)
 EXTRA_DIST += LICENSE
 EXTRA_DIST += docs/backlog.md

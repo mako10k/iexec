@@ -40,3 +40,15 @@ separate from the Docker init/reaper path:
 
 See [privilege.md](privilege.md) for install policy.
 
+## Test
+
+The default `make check` path skips privileged PID namespace validation. To run
+it manually:
+
+```sh
+sudo -n env IEXEC_TEST_PIDNS=1 IEXEC_TEST_BINARY="$PWD/src/iexec" \
+  tests/pidns-validation.sh
+```
+
+The test covers `--pidns=new` and entering an existing PID namespace through
+`pid:`, `file:`, and `fd:` selectors.

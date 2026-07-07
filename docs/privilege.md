@@ -45,4 +45,5 @@ ordinary Docker entrypoint use.
   unaffected.
 - Keep privileged namespace tests opt-in; the default `make check` path should
   remain usable without elevated privileges.
-
+- Run `tests/pidns-validation.sh` under root only when explicitly validating
+  PID namespace behavior.

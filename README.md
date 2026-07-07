@@ -54,10 +54,7 @@ Implemented:
 - non-privileged behavioral tests for the init/reaper contract
 - optional PID namespace creation or entry for non-Docker validation
 - optional parent-death signal configuration
-
-Known incomplete areas:
-
-- privileged PID namespace behavior is not covered by default tests
+- opt-in privileged PID namespace validation tests
 
 See [docs/backlog.md](docs/backlog.md) for the implementation direction.
 See [docs/docker.md](docs/docker.md) for Docker entrypoint usage.

@@ -49,3 +49,10 @@ daemon:
 IEXEC_TEST_DOCKER=1 make check
 ```
 
+Run privileged PID namespace validation only on a host where root may create and
+enter PID namespaces:
+
+```sh
+sudo -n env IEXEC_TEST_PIDNS=1 IEXEC_TEST_BINARY="$PWD/src/iexec" \
+  tests/pidns-validation.sh
+```

@@ -10,9 +10,17 @@
 /depcomp
 /install-sh
 /missing
+/test-driver
+/confdefs.h
+/config.h.in~
+/configure~
 /stamp-h1
 /Makefile
 /Makefile.in
+/iexec-*.tar.*
+/test-suite.log
+/tests/*.log
+/tests/*.trs
 /src/*
 !/src/*.[ch]
 !/src/Makefile.am

@@ -18,9 +18,9 @@ This backlog preserves the project direction:
   `iexec` should be forwarded so Docker stop and similar shutdown paths can
   terminate the wrapped process gracefully.
 
-- [ ] Add behavioral tests for the init/reaper contract.
-  Cover normal exit status, non-zero exit status, signal termination, orphaned
-  child reaping, and the no-command PID 1 reaper mode where practical.
+- [x] Add behavioral tests for the init/reaper contract.
+  Cover normal exit status, non-zero exit status, signal termination, signal
+  forwarding, orphaned child reaping, and non-PID 1 no-command behavior.
 
 ## P1
 

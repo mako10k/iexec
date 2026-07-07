@@ -49,14 +49,15 @@ Implemented:
 - command execution with optional leading `NAME=value` environment assignments
 - child reaping through `wait(2)`
 - subreaper setup when not running as PID 1
+- main child exit status and signal termination propagation
+- shutdown signal forwarding to the main child
+- non-privileged behavioral tests for the init/reaper contract
 - optional PID namespace creation or entry for non-Docker validation
 - optional parent-death signal configuration
 
 Known incomplete areas:
 
-- child exit status and signal termination are not yet propagated correctly
-- signal forwarding from `iexec` to the main child is not yet implemented
-- `make check` has no behavioral tests
+- privileged PID namespace behavior is not covered by default tests
 - Docker-oriented usage, shutdown behavior, and privilege expectations need
   more documentation
 
@@ -71,4 +72,3 @@ make
 ```
 
 The current build system uses Autotools.
-

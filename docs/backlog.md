@@ -24,7 +24,7 @@ This backlog preserves the project direction:
 
 ## P1
 
-- [ ] Document and test the Docker entrypoint use case.
+- [x] Document and test the Docker entrypoint use case.
   Include a minimal container example and expected behavior for shutdown,
   zombie reaping, and command result propagation.
 

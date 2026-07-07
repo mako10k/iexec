@@ -28,7 +28,7 @@ This backlog preserves the project direction:
   Include a minimal container example and expected behavior for shutdown,
   zombie reaping, and command result propagation.
 
-- [ ] Clarify privilege and install policy.
+- [x] Clarify privilege and install policy.
   The ordinary Docker init/reaper path should be understandable without setuid
   assumptions. PID namespace validation mode may need elevated privileges, but
   that risk surface should be documented separately.

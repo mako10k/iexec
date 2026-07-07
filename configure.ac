@@ -8,6 +8,18 @@ AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign])
 AC_USE_SYSTEM_EXTENSIONS
 
+AC_ARG_ENABLE([setuid-install],
+  [AS_HELP_STRING([--enable-setuid-install],
+    [install iexec with the setuid bit for non-Docker PID namespace validation])],
+  [],
+  [enable_setuid_install=no])
+AS_CASE([$enable_setuid_install],
+  [yes], [],
+  [no], [],
+  [AC_MSG_ERROR([--enable-setuid-install must be yes or no])])
+AM_CONDITIONAL([ENABLE_SETUID_INSTALL],
+  [test "x$enable_setuid_install" = "xyes"])
+
 # Checks for programs.
 AC_PROG_CC
 

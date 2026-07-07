@@ -58,11 +58,10 @@ Implemented:
 Known incomplete areas:
 
 - privileged PID namespace behavior is not covered by default tests
-- Docker-oriented usage, shutdown behavior, and privilege expectations need
-  more documentation
 
 See [docs/backlog.md](docs/backlog.md) for the implementation direction.
 See [docs/docker.md](docs/docker.md) for Docker entrypoint usage.
+See [docs/privilege.md](docs/privilege.md) for privilege and install policy.
 
 ## Build
 

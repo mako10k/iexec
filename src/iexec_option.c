@@ -92,11 +92,11 @@ static int iexec_option_parse_pidns_mode(const char *pidns, iexec_option_t *ctx)
 void iexec_option_print_usage(FILE *stream) {
   fprintf(stream, "Usage: %s [OPTION]... [COMMAND] [ARG]...\n",
           program_invocation_name);
-  fprintf(stream, "Run COMMAND with PID namespace\n");
+  fprintf(stream, "Run COMMAND as an init/reaper wrapper\n");
   fprintf(stream, "\n");
   fprintf(stream, "Options:\n");
   fprintf(stream, "  -k, --deathsig=SIGNAME|SIGNUM set parent death signal\n");
-  fprintf(stream, "  -p, --pidns[=MODE]            set PID namespace\n");
+  fprintf(stream, "  -p, --pidns[=MODE]            set PID namespace for validation\n");
   fprintf(stream, "      MODE can be:\n");
   fprintf(stream, "        inherit                   inherit PID namespace\n");
   fprintf(stream, "        new                       create new PID namespace "

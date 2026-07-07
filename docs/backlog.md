@@ -33,7 +33,7 @@ This backlog preserves the project direction:
   assumptions. PID namespace validation mode may need elevated privileges, but
   that risk surface should be documented separately.
 
-- [ ] Keep `--pidns` focused on non-Docker validation.
+- [x] Keep `--pidns` focused on non-Docker validation.
   Tests and documentation should make clear that `--pidns` is for validating
   init/reaper behavior outside Docker, not for repositioning the project as a
   general PID namespace manager.

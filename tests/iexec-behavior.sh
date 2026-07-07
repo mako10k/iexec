@@ -37,6 +37,12 @@ run_expect_status 1 /bin/false
 run_expect_status 7 /bin/sh -c 'exit 7'
 run_expect_status 143 /bin/sh -c 'kill -TERM $$'
 
+help_output=$("$IEXEC" --help)
+case "$help_output" in
+  *"--pidns[=MODE]"*"for validation"*) ;;
+  *) fail "--pidns help text must frame PID namespace mode as validation" ;;
+esac
+
 "$IEXEC" >/dev/null 2>"$tmpdir/no-command.err"
 status=$?
 if [ "$status" -ne 1 ]; then
@@ -75,4 +81,3 @@ fi
 if ! grep -q "done" "$orphan_file"; then
   fail "iexec exited before reaping orphaned child"
 fi
-

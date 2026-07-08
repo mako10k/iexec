@@ -26,6 +26,13 @@ capabilities or the setuid bit.
 
 `--pidns` is for validating init/reaper behavior outside Docker. Creating or
 entering PID namespaces and remounting `/proc` may require elevated privileges.
+Every privileged PID namespace operation also requires the runtime
+`--allow-privileged-pidns` option.
+
+The default install does not add privilege to `iexec`, but an operator may still
+run it as root or with an externally supplied effective `CAP_SYS_ADMIN`. That is
+treated as an existing runtime privilege source, not as an install-time
+privilege backend.
 
 If a local validation workflow needs installed privilege, prefer assigning only
 the capability required for namespace setup:
@@ -51,12 +58,19 @@ The capability and setuid install modes are mutually exclusive.
 This mode should be treated as a separate risk surface. It is not required for
 ordinary Docker entrypoint use.
 
+Before executing `COMMAND`, `iexec` verifies that uid, gid, supplementary
+groups, and capabilities match the expected post-drop state. For non-root
+invocations, effective, permitted, and inheritable capabilities must be empty.
+Supplementary groups must match the groups captured at startup.
+
 ## Review Guidance
 
 - Do not assume setuid is part of the production Docker path.
 - Prefer `--enable-cap-install` over setuid for non-Docker PID namespace
   validation.
 - Use `--enable-setuid-install` only as an explicit fallback.
+- Require `--allow-privileged-pidns` for any runtime `--pidns` operation that
+  creates or enters a PID namespace.
 - Treat any `--pidns` change as privilege-sensitive, even if the Docker path is
   unaffected.
 - Keep privileged namespace tests opt-in; the default `make check` path should

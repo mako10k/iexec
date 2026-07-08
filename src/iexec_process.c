@@ -1,5 +1,6 @@
 #include "iexec_process.h"
 #include "iexec_print.h"
+#include "iexec_privilege.h"
 #include <assert.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -44,6 +45,7 @@ void iexec_put_envs(int argc, char **argv) {
 }
 
 void iexec_execvp(const char *file, char *const argv[]) {
+  iexec_assert_exec_privilege_contract();
   int ret = execvp(file, argv);
   assert(ret == -1);
   iexec_printf(IEXEC_PRINT_LEVEL_INFORMATION, "execvp: %s\n",

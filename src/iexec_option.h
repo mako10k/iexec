@@ -18,6 +18,7 @@ typedef struct iexec_option {
   pid_t pidns_pid;
   const char *pidns_filename;
   int pidns_fd;
+  int allow_privileged_pidns;
   int envind;
 } iexec_option_t;
 

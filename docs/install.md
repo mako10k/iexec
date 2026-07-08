@@ -72,6 +72,9 @@ sudo -n env IEXEC_TEST_PIDNS=1 IEXEC_TEST_BINARY="$PWD/src/iexec" \
   tests/pidns-validation.sh
 ```
 
+Manual `iexec --pidns=...` validation commands must include
+`--allow-privileged-pidns`.
+
 Validate install privilege policy before release:
 
 ```sh

@@ -37,8 +37,8 @@ In other words:
 
 - Docker/container use should normally rely on the inherited container PID
   namespace.
-- `--pidns=new`, `--pidns=pid:PID`, `--pidns=file:PATH`, and `--pidns=fd:FD`
-  are validation and development aids.
+- `--allow-privileged-pidns` is required with `--pidns=new`,
+  `--pidns=pid:PID`, `--pidns=file:PATH`, or `--pidns=fd:FD`.
 - Privilege handling required for PID namespace setup must be treated as a
   separate risk surface from the ordinary Docker init/reaper path.
 
@@ -57,6 +57,8 @@ Implemented:
 - opt-in privileged PID namespace validation tests
 - opt-in capability install for PID namespace validation, with explicit setuid
   fallback
+- command execution privilege contract checks for uid, gid, supplementary
+  groups, and capabilities
 
 See [docs/backlog.md](docs/backlog.md) for the implementation direction.
 See [docs/docker.md](docs/docker.md) for Docker entrypoint usage.

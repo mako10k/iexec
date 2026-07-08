@@ -12,10 +12,11 @@ direction and operational notes live in `docs/`, especially `docs/backlog.md`,
 
 - `autoreconf -fi`: regenerate Autotools files from `configure.ac` and
   `Makefile.am`.
-- `./configure`: configure the local build with default non-setuid install
-  behavior.
+- `./configure`: configure the local build with no install-time privilege.
+- `./configure --enable-cap-install`: prefer capability install for deliberate
+  non-Docker PID namespace validation.
 - `./configure --enable-setuid-install`: opt in to setuid install only for
-  deliberate non-Docker PID namespace validation.
+  explicit fallback validation.
 - `make V=1`: build `src/iexec` with verbose compiler output.
 - `make check V=1`: run the non-privileged test suite. Docker tests skip unless
   explicitly enabled.
@@ -51,8 +52,9 @@ impact.
 
 ## Security & Configuration Notes
 
-The ordinary Docker init/reaper path must not require setuid. Treat `--pidns`
-and `--enable-setuid-install` as privilege-sensitive validation features.
+The ordinary Docker init/reaper path must not require capabilities or setuid.
+Treat `--pidns`, `--allow-privileged-pidns`, `--enable-cap-install`, and
+`--enable-setuid-install` as privilege-sensitive validation features.
 Remote `gh` or `git` operations in this repository should use:
 
 ```sh

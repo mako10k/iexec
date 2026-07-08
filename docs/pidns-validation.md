@@ -12,10 +12,10 @@ Use `--pidns` when you want to exercise init/reaper behavior before or outside a
 Docker runtime:
 
 ```sh
-iexec --pidns=new COMMAND [ARG]...
-iexec --pidns=pid:PID COMMAND [ARG]...
-iexec --pidns=file:/proc/PID/ns/pid COMMAND [ARG]...
-iexec --pidns=fd:FD COMMAND [ARG]...
+iexec --allow-privileged-pidns --pidns=new COMMAND [ARG]...
+iexec --allow-privileged-pidns --pidns=pid:PID COMMAND [ARG]...
+iexec --allow-privileged-pidns --pidns=file:/proc/PID/ns/pid COMMAND [ARG]...
+iexec --allow-privileged-pidns --pidns=fd:FD COMMAND [ARG]...
 ```
 
 This mode exists so PID 1 behavior, `/proc` preparation, and namespace entry can
@@ -36,8 +36,11 @@ Creating or entering PID namespaces may require elevated privileges. Keep that
 separate from the Docker init/reaper path:
 
 - default builds and installs should remain without file capabilities or setuid
+- root execution or externally supplied effective `CAP_SYS_ADMIN` can be used
+  with the default install
 - capability install is opt-in via `./configure --enable-cap-install`
 - setuid install is an explicit fallback via `./configure --enable-setuid-install`
+- runtime PID namespace privilege use requires `--allow-privileged-pidns`
 - privileged namespace tests should remain opt-in
 
 See [privilege.md](privilege.md) for install policy.

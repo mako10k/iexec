@@ -96,6 +96,7 @@ void iexec_option_print_usage(FILE *stream) {
   fprintf(stream, "\n");
   fprintf(stream, "Options:\n");
   fprintf(stream, "  -k, --deathsig=SIGNAME|SIGNUM set parent death signal\n");
+  fprintf(stream, "      --allow-privileged-pidns allow privileged PID namespace setup\n");
   fprintf(stream, "  -p, --pidns[=MODE]            set PID namespace for validation\n");
   fprintf(stream, "      MODE can be:\n");
   fprintf(stream, "        inherit                   inherit PID namespace\n");
@@ -117,6 +118,7 @@ void iexec_option_print_usage(FILE *stream) {
 void iexec_option_parse(int argc, char **argv, struct iexec_option *ctx) {
   int opt;
   static struct option long_options[] = {
+      {"allow-privileged-pidns", no_argument, NULL, 256},
       {"deathsig", required_argument, NULL, 'k'},
       {"pidns", optional_argument, NULL, 'p'},
       {"verbose", no_argument, NULL, 'v'},
@@ -127,6 +129,10 @@ void iexec_option_parse(int argc, char **argv, struct iexec_option *ctx) {
   while ((opt = getopt_long(argc, argv, "+k:p::vqVh", long_options, NULL)) !=
          -1) {
     switch (opt) {
+
+    case 256:
+      ctx->allow_privileged_pidns = 1;
+      break;
 
     case 'k':
       ctx->deathsig = iexec_option_parse_signal(optarg);
@@ -173,6 +179,7 @@ void iexec_option_init(struct iexec_option *ctx) {
   ctx->pidns_pid = 0;
   ctx->pidns_filename = NULL;
   ctx->pidns_fd = 0;
+  ctx->allow_privileged_pidns = 0;
   ctx->envind = 0;
 }
 

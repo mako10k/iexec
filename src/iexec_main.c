@@ -50,7 +50,7 @@ void iexec_print_warning(iexec_option_t *ctx) {
     }
     if (ctx->pidns == IEXEC_PIDNS_MODE_NEW) {
       iexec_printf(IEXEC_PRINT_LEVEL_WARNING,
-                   "Warning: running as init process in new PID namespace\n");
+                   "Warning: creating new PID namespace for validation\n");
     }
   }
 }
@@ -58,6 +58,12 @@ void iexec_print_warning(iexec_option_t *ctx) {
 void iexec_main(int argc, char **argv, iexec_option_t *ctx) {
   argc -= ctx->envind;
   argv += ctx->envind;
+  if (ctx->pidns != IEXEC_PIDNS_MODE_INHERIT &&
+      !ctx->allow_privileged_pidns) {
+    iexec_printf(IEXEC_PRINT_LEVEL_ERROR,
+                 "--pidns requires --allow-privileged-pidns\n");
+    iexec_exit(IEXEC_EXIT_FAILURE);
+  }
   switch (ctx->pidns) {
   case IEXEC_PIDNS_MODE_INHERIT:
     iexec_drop_privilege_permanently();
@@ -100,7 +106,8 @@ void iexec_main(int argc, char **argv, iexec_option_t *ctx) {
     extern char *program_invocation_name;
     iexec_printf(
         IEXEC_PRINT_LEVEL_WARNING,
-        "Warning: to enter this new PID namespace, use %s --pidns=pid:%d %s\n",
+        "Warning: to enter this new PID namespace, use "
+        "%s --allow-privileged-pidns --pidns=pid:%d %s\n",
         program_invocation_name, pid_child, shell ? shell : "/bin/sh");
   }
 

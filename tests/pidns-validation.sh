@@ -48,11 +48,11 @@ assert_inside_iexec_pidns='
   test "$$" -ne 1
 '
 
-run_expect_status 7 --pidns=new /bin/sh -c 'exit 7'
-run_expect_status 0 --pidns=new /bin/sh -c "$assert_inside_iexec_pidns"
+run_expect_status 7 --allow-privileged-pidns --pidns=new /bin/sh -c 'exit 7'
+run_expect_status 0 --allow-privileged-pidns --pidns=new /bin/sh -c "$assert_inside_iexec_pidns"
 
 orphan_file=$tmpdir/pidns-orphan-reaped
-"$IEXEC" --pidns=new /bin/sh -c \
+"$IEXEC" --allow-privileged-pidns --pidns=new /bin/sh -c \
   '(sleep 1; echo done > "$1") & exit 0' sh "$orphan_file"
 status=$?
 if [ "$status" -ne 0 ]; then
@@ -63,7 +63,7 @@ if ! grep -q "done" "$orphan_file"; then
 fi
 
 holder_err=$tmpdir/holder.err
-"$IEXEC" --pidns=new /bin/sh -c \
+"$IEXEC" --allow-privileged-pidns --pidns=new /bin/sh -c \
   'trap "exit 0" TERM; while :; do sleep 1 & wait $!; done' \
   2>"$holder_err" &
 holder_pid=$!
@@ -82,10 +82,9 @@ if [ -z "$init_pid" ]; then
   fail "could not discover holder PID namespace init process"
 fi
 
-run_expect_status 0 --pidns=pid:"$init_pid" /bin/sh -c "$assert_inside_iexec_pidns"
-run_expect_status 0 --pidns=file:/proc/"$init_pid"/ns/pid /bin/sh -c "$assert_inside_iexec_pidns"
+run_expect_status 0 --allow-privileged-pidns --pidns=pid:"$init_pid" /bin/sh -c "$assert_inside_iexec_pidns"
+run_expect_status 0 --allow-privileged-pidns --pidns=file:/proc/"$init_pid"/ns/pid /bin/sh -c "$assert_inside_iexec_pidns"
 
 exec 9<"/proc/$init_pid/ns/pid"
-run_expect_status 0 --pidns=fd:9 /bin/sh -c "$assert_inside_iexec_pidns"
+run_expect_status 0 --allow-privileged-pidns --pidns=fd:9 /bin/sh -c "$assert_inside_iexec_pidns"
 exec 9<&-
-

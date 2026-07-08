@@ -72,6 +72,16 @@ assert_no_file_caps() {
   fi
 }
 
+run_as_invoker_if_available() {
+  if [ -z "${SUDO_UID:-}" ] || [ -z "${SUDO_GID:-}" ]; then
+    return 0
+  fi
+  if ! command -v setpriv >/dev/null 2>&1; then
+    return 0
+  fi
+  setpriv --reuid "$SUDO_UID" --regid "$SUDO_GID" --init-groups "$@"
+}
+
 run_install default
 if [ -u "$installed_bin" ]; then
   fail "default install unexpectedly set the setuid bit"
@@ -104,9 +114,15 @@ case "$caps" in
   *cap_sys_admin*=*ep*) ;;
   *) fail "capability install did not set cap_sys_admin+ep: $caps" ;;
 esac
+run_as_invoker_if_available "$installed_bin" --allow-privileged-pidns \
+  --pidns=new /bin/true >/dev/null 2>&1 ||
+  fail "capability install could not create a PID namespace as the invoker"
 
 run_install setuid --enable-setuid-install
 if [ ! -u "$installed_bin" ]; then
   fail "setuid fallback install did not set the setuid bit"
 fi
 assert_no_file_caps "$installed_bin"
+run_as_invoker_if_available "$installed_bin" --allow-privileged-pidns \
+  --pidns=new /bin/true >/dev/null 2>&1 ||
+  fail "setuid fallback could not create a PID namespace as the invoker"

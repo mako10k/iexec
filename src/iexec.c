@@ -5,6 +5,7 @@
 int main(int argc, char **argv) {
   iexec_option_t ctx;
   iexec_drop_privilege();
+  iexec_privilege_snapshot();
   iexec_option_init(&ctx);
   iexec_option_parse(argc, argv, &ctx);
   iexec_print_warning(&ctx);

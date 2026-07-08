@@ -41,6 +41,7 @@ run_expect_status 0 --deathsig=NONE /bin/true
 run_expect_status 0 --deathsig=TERM /bin/true
 run_expect_status 0 --deathsig=15 /bin/true
 run_expect_status 0 --pidns=inherit /bin/true
+run_expect_status 0 --allow-privileged-pidns --pidns=inherit /bin/true
 
 version_output=$("$IEXEC" --version)
 status=$?
@@ -65,6 +66,10 @@ case "$help_output" in
   *"--pidns[=MODE]"*"for validation"*) ;;
   *) fail "--pidns help text must frame PID namespace mode as validation" ;;
 esac
+case "$help_output" in
+  *"--allow-privileged-pidns"*"allow privileged PID namespace setup"*) ;;
+  *) fail "--help output must describe explicit privileged pidns opt-in" ;;
+esac
 
 "$IEXEC" --deathsig=NOPE /bin/true 2>"$tmpdir/invalid-deathsig.err"
 status=$?
@@ -82,6 +87,16 @@ if [ "$status" -ne 1 ]; then
 fi
 if ! grep -q "Invalid pidns: pid:not-a-pid" "$tmpdir/invalid-pidns.err"; then
   fail "missing invalid pidns diagnostic"
+fi
+
+"$IEXEC" --pidns=new /bin/true 2>"$tmpdir/missing-pidns-allow.err"
+status=$?
+if [ "$status" -ne 1 ]; then
+  fail "expected missing pidns allow status 1, got $status"
+fi
+if ! grep -q -- "--pidns requires --allow-privileged-pidns" \
+    "$tmpdir/missing-pidns-allow.err"; then
+  fail "missing privileged pidns opt-in diagnostic"
 fi
 
 "$IEXEC" >/dev/null 2>"$tmpdir/no-command.err"

@@ -11,8 +11,12 @@
 #include <sys/mount.h>
 #include <unistd.h>
 
+#ifndef O_CLOEXEC
+#define O_CLOEXEC 0
+#endif
+
 void iexec_pidns_new(void) {
-  iexec_raise_privilege();
+  iexec_prepare_pidns_privilege();
   int ret = unshare(CLONE_NEWPID);
   if (ret == -1) {
     iexec_printf(IEXEC_PRINT_LEVEL_FATAL,
@@ -34,7 +38,7 @@ void iexec_pidns_enter_by_fd_internal(int fd) {
 }
 
 void iexec_pidns_enter_by_fd(int fd) {
-  iexec_raise_privilege();
+  iexec_prepare_pidns_privilege();
   iexec_pidns_enter_by_fd_internal(fd);
   iexec_drop_privilege();
   close(fd);
@@ -43,8 +47,7 @@ void iexec_pidns_enter_by_fd(int fd) {
 void iexec_pidns_enter_by_file(const char *path) {
   iexec_printf(IEXEC_PRINT_LEVEL_INFORMATION,
                "Entering PID namespace by file=%s\n", path);
-  iexec_raise_privilege();
-  int fd = open(path, O_RDONLY);
+  int fd = open(path, O_RDONLY | O_CLOEXEC);
   if (fd == -1) {
     iexec_printf(IEXEC_PRINT_LEVEL_ERROR,
                  "open while entering PID namespace: %s\n",
@@ -67,7 +70,7 @@ void iexec_pidns_enter_by_pid(pid_t pid) {
 void iexec_pidns_prepare(void) {
   iexec_printf(IEXEC_PRINT_LEVEL_INFORMATION,
                "Preparing PID namespace (pid:%d)\n", getpid());
-  iexec_raise_privilege();
+  iexec_prepare_pidns_privilege();
   if (unshare(CLONE_NEWNS) == -1) {
     iexec_printf(IEXEC_PRINT_LEVEL_FATAL,
                  "unshare while preparing PID namespace: %s\n",

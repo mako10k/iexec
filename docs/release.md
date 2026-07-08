@@ -18,6 +18,8 @@ This project is licensed under the MIT License. See [../LICENSE](../LICENSE).
   validation workflows.
 - Confirm `./configure --enable-setuid-install` is only used as an explicit
   fallback.
+- Confirm privileged PID namespace commands require `--allow-privileged-pidns`
+  and command execution still passes the privilege contract checks.
 
 ## Distribution Archive
 

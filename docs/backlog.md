@@ -57,3 +57,8 @@ This backlog preserves the project direction:
   Use `cap_sys_admin+ep` for explicit non-Docker PID namespace validation
   installs, keep setuid as a mutually exclusive fallback, and validate the
   install policy before release.
+
+- [x] Add explicit PID namespace privilege and exec contract gates.
+  Require runtime opt-in for privileged `--pidns` use, keep `seteuid(0)` limited
+  to the setuid fallback, and verify uid, gid, supplementary groups, and
+  capabilities before executing the wrapped command.

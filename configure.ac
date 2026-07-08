@@ -40,6 +40,12 @@ AM_CONDITIONAL([ENABLE_CAP_INSTALL],
   [test "x$enable_cap_install" = "xyes"])
 AM_CONDITIONAL([ENABLE_SETUID_INSTALL],
   [test "x$enable_setuid_install" = "xyes"])
+AS_IF([test "x$enable_cap_install" = "xyes"],
+  [AC_DEFINE([IEXEC_INSTALL_PRIVILEGE_CAP], [1],
+    [Define when iexec is installed with cap_sys_admin.])])
+AS_IF([test "x$enable_setuid_install" = "xyes"],
+  [AC_DEFINE([IEXEC_INSTALL_PRIVILEGE_SETUID], [1],
+    [Define when iexec is installed as setuid fallback.])])
 
 # Checks for programs.
 AC_PROG_CC

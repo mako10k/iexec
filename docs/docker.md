@@ -22,8 +22,8 @@ When used as the container entrypoint, `iexec` should:
   `SIGTERM`
 
 Docker use should normally rely on Docker's inherited PID namespace. Do not use
-`--pidns` for the ordinary container entrypoint path, and do not install `iexec`
-as setuid for this path.
+`--pidns` for the ordinary container entrypoint path, and do not grant `iexec`
+file capabilities or setuid privilege for this path.
 
 ## Minimal Example
 
@@ -57,5 +57,5 @@ The Docker test builds a temporary BusyBox-based image, copies the built
 `iexec` binary into it, and checks command status propagation, shutdown signal
 forwarding, and orphaned child reaping through the entrypoint path.
 
-See [privilege.md](privilege.md) for why the Docker path does not require setuid
-installation.
+See [privilege.md](privilege.md) for why the Docker path does not require
+privileged installation.

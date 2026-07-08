@@ -55,6 +55,8 @@ Implemented:
 - optional PID namespace creation or entry for non-Docker validation
 - optional parent-death signal configuration
 - opt-in privileged PID namespace validation tests
+- opt-in capability install for PID namespace validation, with explicit setuid
+  fallback
 
 See [docs/backlog.md](docs/backlog.md) for the implementation direction.
 See [docs/docker.md](docs/docker.md) for Docker entrypoint usage.

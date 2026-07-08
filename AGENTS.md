@@ -23,6 +23,7 @@ direction and operational notes live in `docs/`, especially `docs/backlog.md`,
   on a Docker-capable host.
 - `sudo -n env IEXEC_TEST_PIDNS=1 IEXEC_TEST_BINARY="$PWD/src/iexec" tests/pidns-validation.sh`:
   run privileged PID namespace validation explicitly.
+- `sudo -n tests/install-policy.sh`: validate capability-first install policy.
 - `make distcheck V=1`: verify source distribution completeness.
 
 ## Coding Style & Naming Conventions

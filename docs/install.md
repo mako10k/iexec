@@ -11,8 +11,8 @@ make check
 
 ## Default Install
 
-The default install path is for the Docker init/reaper use case and does not set
-the setuid bit:
+The default install path is for the Docker init/reaper use case. It does not
+set Linux file capabilities or the setuid bit:
 
 ```sh
 ./configure
@@ -20,10 +20,24 @@ make
 make install
 ```
 
-## Setuid Install for PID Namespace Validation
+## Capability Install for PID Namespace Validation
 
-Only enable setuid install for a deliberate non-Docker PID namespace validation
-workflow:
+Prefer a capability-based install for deliberate non-Docker PID namespace
+validation workflows that need to create or enter PID namespaces:
+
+```sh
+./configure --enable-cap-install
+make
+make install
+```
+
+This applies `cap_sys_admin+ep` to the installed `iexec` binary. `CAP_SYS_ADMIN`
+is still sensitive, but it is narrower than a setuid-root install.
+
+## Setuid Fallback for PID Namespace Validation
+
+Use setuid only as an explicit fallback when the capability install is not
+available or does not work for the target validation host:
 
 ```sh
 ./configure --enable-setuid-install
@@ -31,6 +45,7 @@ make
 make install
 ```
 
+`--enable-cap-install` and `--enable-setuid-install` are mutually exclusive.
 This is not required for ordinary Docker entrypoint use. See
 [privilege.md](privilege.md) and [pidns-validation.md](pidns-validation.md).
 
@@ -55,4 +70,10 @@ enter PID namespaces:
 ```sh
 sudo -n env IEXEC_TEST_PIDNS=1 IEXEC_TEST_BINARY="$PWD/src/iexec" \
   tests/pidns-validation.sh
+```
+
+Validate install privilege policy before release:
+
+```sh
+sudo -n tests/install-policy.sh
 ```

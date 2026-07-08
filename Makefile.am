@@ -4,6 +4,7 @@ TESTS = tests/iexec-behavior.sh
 TESTS += tests/docker-entrypoint.sh
 TESTS += tests/pidns-validation.sh
 EXTRA_DIST = $(TESTS)
+EXTRA_DIST += tests/install-policy.sh
 EXTRA_DIST += LICENSE
 EXTRA_DIST += docs/backlog.md
 EXTRA_DIST += docs/ci.md

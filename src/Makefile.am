@@ -21,7 +21,10 @@ noinst_HEADERS += iexec_main.h
 AM_LDFLAGS = -static -flto
 AM_CFLAGS = -Wall -Wextra -Werror -Wpedantic -std=c99 -flto
 
-if ENABLE_SETUID_INSTALL
 install-exec-hook:
+if ENABLE_CAP_INSTALL
+	$(SETCAP) cap_sys_admin+ep "$(DESTDIR)$(bindir)/iexec"
+endif
+if ENABLE_SETUID_INSTALL
 	chmod u+s "$(DESTDIR)$(bindir)/iexec"
 endif

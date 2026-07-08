@@ -10,10 +10,14 @@ This project is licensed under the MIT License. See [../LICENSE](../LICENSE).
 - Run `./configure`.
 - Run `make check`.
 - Run `make distcheck`.
+- Run `sudo -n tests/install-policy.sh` on a host with `setcap` and `getcap`.
 - Optionally run `IEXEC_TEST_DOCKER=1 make check` on a Docker-capable host.
-- Confirm the default install does not set the setuid bit.
-- Confirm `./configure --enable-setuid-install` is only used for deliberate
-  PID namespace validation workflows.
+- Confirm the default install does not set Linux file capabilities or the setuid
+  bit.
+- Prefer `./configure --enable-cap-install` for deliberate PID namespace
+  validation workflows.
+- Confirm `./configure --enable-setuid-install` is only used as an explicit
+  fallback.
 
 ## Distribution Archive
 

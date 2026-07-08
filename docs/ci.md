@@ -23,3 +23,9 @@ To run the privileged PID namespace test manually:
 sudo -n env IEXEC_TEST_PIDNS=1 IEXEC_TEST_BINARY="$PWD/src/iexec" \
   tests/pidns-validation.sh
 ```
+
+Install privilege policy is also a release gate rather than a default CI step:
+
+```sh
+sudo -n tests/install-policy.sh
+```

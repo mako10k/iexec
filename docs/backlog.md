@@ -52,3 +52,8 @@ This backlog preserves the project direction:
   Cover version and help output, `--deathsig` parsing, explicit inherited PID
   namespace mode, invalid option diagnostics, and leading environment
   assignments.
+
+- [x] Prefer capability install over setuid fallback.
+  Use `cap_sys_admin+ep` for explicit non-Docker PID namespace validation
+  installs, keep setuid as a mutually exclusive fallback, and validate the
+  install policy before release.

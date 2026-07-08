@@ -19,15 +19,27 @@ make
 make install
 ```
 
-By default, `make install` installs `iexec` without setting the setuid bit.
+By default, `make install` installs `iexec` without setting Linux file
+capabilities or the setuid bit.
 
 ## Non-Docker PID Namespace Validation
 
 `--pidns` is for validating init/reaper behavior outside Docker. Creating or
 entering PID namespaces and remounting `/proc` may require elevated privileges.
 
-If a local validation workflow intentionally needs a setuid-installed `iexec`,
-enable it explicitly:
+If a local validation workflow needs installed privilege, prefer assigning only
+the capability required for namespace setup:
+
+```sh
+./configure --enable-cap-install
+make
+make install
+```
+
+This installs `iexec` with `cap_sys_admin+ep`. `CAP_SYS_ADMIN` is still broad,
+so this remains a validation-only path.
+
+Use setuid only as an explicitly selected fallback:
 
 ```sh
 ./configure --enable-setuid-install
@@ -35,12 +47,16 @@ make
 make install
 ```
 
+The capability and setuid install modes are mutually exclusive.
 This mode should be treated as a separate risk surface. It is not required for
 ordinary Docker entrypoint use.
 
 ## Review Guidance
 
 - Do not assume setuid is part of the production Docker path.
+- Prefer `--enable-cap-install` over setuid for non-Docker PID namespace
+  validation.
+- Use `--enable-setuid-install` only as an explicit fallback.
 - Treat any `--pidns` change as privilege-sensitive, even if the Docker path is
   unaffected.
 - Keep privileged namespace tests opt-in; the default `make check` path should

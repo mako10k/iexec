@@ -27,15 +27,17 @@ be inspected independently from Docker.
 
 - a general-purpose PID namespace administration tool
 - a replacement for container runtime namespace management
-- a reason to use setuid in the ordinary Docker entrypoint path
+- a reason to grant file capabilities or setuid privilege in the ordinary
+  Docker entrypoint path
 
 ## Privilege Boundary
 
 Creating or entering PID namespaces may require elevated privileges. Keep that
 separate from the Docker init/reaper path:
 
-- default builds and installs should remain non-setuid
-- setuid install is opt-in via `./configure --enable-setuid-install`
+- default builds and installs should remain without file capabilities or setuid
+- capability install is opt-in via `./configure --enable-cap-install`
+- setuid install is an explicit fallback via `./configure --enable-setuid-install`
 - privileged namespace tests should remain opt-in
 
 See [privilege.md](privilege.md) for install policy.
